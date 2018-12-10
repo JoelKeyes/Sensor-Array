@@ -1,0 +1,139 @@
+
+#include <Servo.h>
+
+Servo myservo;  // create servo object to control a servo
+
+// defines pin numbers
+const int stepPin = 3; 
+const int dirPin = 4; 
+
+int ThermistorPinA = 1;
+int ThermistorPinB = 2;
+int ThermistorPinC = 3;
+int ThermistorPinD = 4;
+
+int VoA;
+int VoB;
+int VoC;
+int VoD;
+
+int TA;
+int TB;
+int TC;
+int TD;
+
+float R1 = 10000;
+float logR2, R2, logR3, R3, logR4, R4, logR5, R5;// TA, TB, TC, TD;
+float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
+float c4 = 1.009249522e-03, c5 = 2.378405444e-04, c6 = 2.019202697e-07;
+float c7 = 1.009249522e-03, c8 = 2.378405444e-04, c9 = 2.019202697e-07;
+float c10 = 1.009249522e-03, c11 = 2.378405444e-04, c12 = 2.019202697e-07;
+
+int pos = 90;    // variable to store the servo position
+
+
+
+void setup() {
+  
+Serial.begin(9600);
+
+// Sets the two pins as Outputs
+  pinMode(stepPin,OUTPUT); 
+  pinMode(dirPin,OUTPUT);
+
+myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+}
+
+void loop() {
+
+// Temperature X1
+  VoA = analogRead(ThermistorPinA);
+  R2 = R1 * (1023.0 / (float)VoA - 1.0);
+  logR2 = log(R2);
+  TA = (1.0 / (c1 + c2*logR2 + c3*logR2*logR2*logR2));
+  TA = TA - 273.15;
+  TA = (TA * 9.0)/ 5.0 + 32.0; 
+  
+// Temperature X2
+  VoB = analogRead(ThermistorPinB);
+  R3 = R1 * (1023.0 / (float)VoB - 1.0);
+  logR3 = log(R3);
+  TB = (1.0 / (c4 + c5*logR3 + c6*logR3*logR3*logR3));
+  TB = TB - 273.15;
+  TB = (TB * 9.0)/ 5.0 + 32.0;
+  
+// Temperature Y1
+  VoC = analogRead(ThermistorPinC);
+  R4 = R1 * (1023.0 / (float)VoC - 1.0);
+  logR4 = log(R4);
+  TC = (1.0 / (c7 + c8*logR4 + c9*logR4*logR4*logR4));
+  TC = TC - 273.15;
+  TC = (TC * 9.0)/ 5.0 + 32.0;
+
+
+// Temperature Y2
+  VoD = analogRead(ThermistorPinD);
+  R5 = R1 * (1023.0 / (float)VoD - 1.0);
+  logR5 = log(R5);
+  TD = (1.0 / (c10 + c11*logR5 + c12*logR5*logR5*logR5));
+  TD = TD - 273.15;
+  TD = (TD * 9.0)/ 5.0 + 35.0;
+
+
+
+  delay(250);
+
+  Serial.print("Temperature A: ");
+  Serial.println(TA);
+
+  delay(250);
+
+  Serial.print("Temperature B: ");
+  Serial.println(TB); 
+  
+   delay(250);
+
+  Serial.print("Temperature C: ");
+  Serial.println(TC);
+
+  delay(250);
+
+  Serial.print("Temperature D: ");
+  Serial.println(TD); 
+  
+ 
+
+
+
+  if (TA < TB)
+  {
+     myservo.write(pos +=1);
+  }
+  if (TA > TB)
+  {
+     myservo.write(pos -=1);
+  } 
+
+   if (TC < TD)
+  {
+    digitalWrite(dirPin,HIGH); // Enables the motor to move in direction of sensor Y1 reading from TC
+  for(int x = 0; x < 5; x++) {
+    digitalWrite(stepPin,HIGH); 
+    //delayMicroseconds(500); 
+    digitalWrite(stepPin,LOW); 
+    //delayMicroseconds(500); 
+  }
+  }
+
+  if (TC > TD)
+  {
+    digitalWrite(dirPin,LOW); //Enables the motor to move in direction of sensor Y2 reading from TD
+  for(int x = 0; x < 5; x++) {
+    digitalWrite(stepPin,HIGH);
+    //delayMicroseconds(500);
+    digitalWrite(stepPin,LOW);
+   // delayMicroseconds(500);
+  }
+  } 
+  }
+   
